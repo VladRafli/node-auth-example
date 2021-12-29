@@ -79,7 +79,14 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 /* Routes */
-app.get('/', async (req, res) => {
+app.get('/', (req, res) => {
+    if(req.query.loggedOut) {
+        res.send('Successfully Logged Out!');
+    } else {
+        res.send('Home Route!');
+    }
+})
+app.get('/get', async (req, res) => {
     if(req.query.id) {
         res.send(await db.findById(req.query.id, (err, data) => {
             if(err) return err;
@@ -96,9 +103,15 @@ app.get('/login', (req, res) => {
     if(req.query.success == 1) {
         res.send('Login Failed!');
     } else {
-        res.send('Login Successfull!');
+        res.send(`Login Successfull! SessionID: ${req.sessionID}`);
     }
-})
+});
 app.post('/login', passport.authenticate('local', { failureRedirect: '/login?success=1' }), async (req, res) => {
     res.redirect('/login?success=0');
+});
+app.get('/logout', (req, res) => {
+    const userId = req.user;
+    console.log(userId, 'is Logging out!');
+    req.logout();
+    res.redirect('/?loggedOut=true');
 })
